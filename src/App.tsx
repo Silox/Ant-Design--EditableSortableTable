@@ -3,22 +3,13 @@ import * as React from "react";
 import { Button, Checkbox, Col, Form, Icon, Input, Popconfirm, Row, Spin, Select, Table, Tooltip } from "antd";
 
 class EditableTextCell extends React.Component<any, any> {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            value: this.props.value,
-            editable: this.props.editable
-        };
-    }
-
     private handleChange(e) {
         const { value } = e.target;
         this.props.handleChange(value);
     }
 
     public render() {
-        const { value, editable } = this.props;
+        const { editable, value } = this.props;
 
         return (
             <div>
@@ -52,7 +43,7 @@ export default class EditableSortableTable extends React.Component<any, any> {
                 dataIndex: "title",
                 width: "40%",
                 render: (text, record, index) => this.renderTextColumn(record, index, "title", text),
-                sorter: (a, b) => a.title.localeCompare(b.title),
+                sorter: (a, b) => a._orderTitle.localeCompare(b._orderTitle),
             },
             {
                 title: "Actions",
@@ -66,16 +57,18 @@ export default class EditableSortableTable extends React.Component<any, any> {
                 {
                     key: 1,
                     title: "C - Test",
+                    _orderTitle: "C - Test"
 
                 },
                 {
                     key: 2,
                     title: "M - Test",
-
+                    _orderTitle: "M - Test"
                 },
                 {
                     key: 3,
                     title: "X - Test",
+                    _orderTitle: "X - Test"
                 },
             ],
             isEditableMap: {}
@@ -108,9 +101,13 @@ export default class EditableSortableTable extends React.Component<any, any> {
            <EditableTextCell
                 editable={editable}
                 value={text}
-                handleChange={value => this.handleChange(index, key, value)}
+                handleChange={value => this.handleChange(record, key, value)}
            />
        );
+    }
+
+    private isEditing() {
+        return Object.keys(this.state.isEditableMap).length > 0;
     }
 
     private isEditable(record) {
@@ -121,14 +118,18 @@ export default class EditableSortableTable extends React.Component<any, any> {
         const isEditableMap = Object.assign({}, this.state.editableMap);
         isEditableMap[record.key] = true;
 
-        this.setState({ isEditableMap: isEditableMap });
+        this.setState({
+            isEditableMap: isEditableMap
+        });
     }
 
     private setNotEditable(record) {
         const isEditableMap = Object.assign({}, this.state.editableMap);
         delete isEditableMap[record.key];
 
-        this.setState({ isEditableMap: isEditableMap });
+        this.setState({
+            isEditableMap: isEditableMap
+        });
     }
 
     private handleEdit(record) {
@@ -138,12 +139,18 @@ export default class EditableSortableTable extends React.Component<any, any> {
     private handleSave(record) {
         // Save to API
         // APIUtils.saveRecord(record);
+        record._orderTitle = record.title;
         this.setNotEditable(record);
     }
 
-    private handleChange(index, key, value) {
-        const sourceData = this.state.sourceData.map(record => Object.assign({}, record));
-        sourceData[index][key] = value;
+    private handleChange(record, key, value) {
+        const sourceData = this.state.sourceData.map(a => Object.assign({}, a));
+        const updatedRecord = { ...record, [key]:value };
+
+        const index = sourceData.findIndex(data =>
+            data.key === record.key
+        );
+        sourceData.splice(index, 1, updatedRecord);
 
         this.setState({
             sourceData: sourceData
