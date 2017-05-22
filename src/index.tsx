@@ -6,10 +6,10 @@ import EditableSortableTable from "App";
 
 const rootEl = document.getElementsByClassName("table-test")[0];
 ReactDOM.render(
-    <AppContainer>
-        <EditableSortableTable />
-    </AppContainer>,
-    rootEl
+  <AppContainer>
+      <EditableSortableTable />
+  </AppContainer>,
+  rootEl
 );
 
 if (module.hot) {
@@ -19,7 +19,7 @@ if (module.hot) {
     const NextApp = require("./App").default;
     ReactDOM.render(
       <AppContainer>
-         <NextApp />
+        <NextApp />
       </AppContainer>,
       rootEl
     );

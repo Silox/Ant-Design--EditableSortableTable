@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Button, Checkbox, Col, Form, Icon, Input, Popconfirm, Row, Spin, Select, Table, Tooltip } from "antd";
 
+
 class EditableTextCell extends React.Component<any, any> {
     private handleChange(e) {
         const { value } = e.target;
@@ -43,7 +44,26 @@ export default class EditableSortableTable extends React.Component<any, any> {
                 dataIndex: "title",
                 width: "40%",
                 render: (text, record, index) => this.renderTextColumn(record, index, "title", text),
-                sorter: (a, b) => a._orderTitle.localeCompare(b._orderTitle),
+                sorter: (a, b) => a._originalTitle.localeCompare(b._originalTitle),
+            },
+            {
+                title: "Type",
+                dataIndex: "type",
+                width: "20%",
+                render: (text, record, index) => this.renderTextColumn(record, index, "type", text),
+                filters: [
+                    {
+                        text: "A",
+                        value: "A"
+                    },
+                    {
+                        text: "B",
+                        value: "B",
+                    }
+                ],
+                onFilter: (value, record) => record._originalType.indexOf(value) === 0,
+                sorter: (a, b) => a._originalType.localeCompare(b._originalType),
+
             },
             {
                 title: "Actions",
@@ -57,18 +77,24 @@ export default class EditableSortableTable extends React.Component<any, any> {
                 {
                     key: 1,
                     title: "C - Test",
-                    _orderTitle: "C - Test"
+                    type: "A",
+                    _originalTitle: "C - Test",
+                    _originalType: "A"
 
                 },
                 {
                     key: 2,
                     title: "M - Test",
-                    _orderTitle: "M - Test"
+                    type: "A",
+                    _originalTitle: "M - Test",
+                    _originalType: "A"
                 },
                 {
                     key: 3,
                     title: "X - Test",
-                    _orderTitle: "X - Test"
+                    type: "B",
+                    _originalTitle: "X - Test",
+                    _originalType: "B"
                 },
             ],
             isEditableMap: {}
@@ -115,7 +141,7 @@ export default class EditableSortableTable extends React.Component<any, any> {
     }
 
     private setEditable(record) {
-        const isEditableMap = Object.assign({}, this.state.editableMap);
+        const { isEditableMap } = this.state;
         isEditableMap[record.key] = true;
 
         this.setState({
@@ -124,11 +150,12 @@ export default class EditableSortableTable extends React.Component<any, any> {
     }
 
     private setNotEditable(record) {
-        const isEditableMap = Object.assign({}, this.state.editableMap);
+        const { isEditableMap } = this.state;
+
         delete isEditableMap[record.key];
 
         this.setState({
-            isEditableMap: isEditableMap
+            isEditableMap: this.state.isEditableMap
         });
     }
 
@@ -139,7 +166,8 @@ export default class EditableSortableTable extends React.Component<any, any> {
     private handleSave(record) {
         // Save to API
         // APIUtils.saveRecord(record);
-        record._orderTitle = record.title;
+        record._originalTitle = record.title;
+        record._originalType = record.type;
         this.setNotEditable(record);
     }
 
@@ -166,6 +194,14 @@ export default class EditableSortableTable extends React.Component<any, any> {
                 <Table
                     dataSource={sourceData}
                     columns={this.columns}
+                    locale={{
+                        filterTitle: 'Filter Menu',
+                        filterConfirm: 'OK',
+                        filterReset: 'Reset',
+                        emptyText: 'No Data',
+                        selectAll: 'Select Current Page',
+                        selectInvert: 'Select Invert',
+                    }}
                 />
             </div>
         );
